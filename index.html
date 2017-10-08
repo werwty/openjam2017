@@ -19,24 +19,39 @@
     var game = new Phaser.Game(800, 600, Phaser.AUTO, '', {preload: preload, create: create, update: update});
     var twitTime = 0;
     var mailTime = 0;
-    var hrcdirection = -1;
-    var djtdirection = 1;
+    var hrcdirection = 1;
+    var djtdirection = -1;
 
     function preload() {
 
         game.load.image('whitehouse', 'assets/whitehouse.png');
         game.load.image('ground', 'assets/platform.png');
 
-        game.load.spritesheet('trump', './assets/trump.png', 80, 80);
+        game.load.spritesheet('trump', './assets/trump.png', 40, 40)
+                game.load.spritesheet('trump-1', './assets/trump-1.png', 40, 40);
+                game.load.spritesheet('trump-2', './assets/trump-2.png', 40, 40);
+                game.load.spritesheet('trump-3', './assets/trump-3.png', 40, 40);
+                game.load.spritesheet('trump-4', './assets/trump-4.png', 40, 40);
+
+
         game.load.image('twit', './assets/twit.png');
 
-        game.load.spritesheet('hrc', './assets/hrc.png', 80, 80);
+        game.load.spritesheet('hrc', './assets/hrc.png', 40, 40);
         game.load.image('mail', './assets/mail.png');
+        game.load.image('volume', './assets/speaker.png');
+        game.load.image('mute', './assets/mute.png');
+
+        game.load.audio('bgm', ['assets/bgm.ogg']);
     }
 
     function create() {
 
+        volumebutton = game.add.button(200, game.world.height-500, 'volume', muteClick, this);
 
+        music = game.add.audio('bgm');
+        music.loop = true;
+
+        music.play();
         game.physics.startSystem(Phaser.Physics.ARCADE);
         game.add.sprite(0, 0, 'whitehouse');
 
@@ -56,20 +71,22 @@
         platform0.body.immovable = true;
 
 
-        djt = game.add.sprite(80, game.world.height - 160, 'trump');
+        djt = game.add.sprite(750, game.world.height - 50, 'trump');
         game.physics.arcade.enable(djt);
 
         djt.body.bounce.y = 0.2;
         djt.body.gravity.y = 800;
         djt.animations.add('idle', [0, 2], 4, true);
         djt.animations.add('walk', [0, 1], 4, true);
-        djt.animations.add('fire', [0, 5], 4, true);
+        djt.animations.add('fire', [0, 4], 4, true);
         djt.anchor.set(0.5, 0.5);
         djt.scale.x = djtdirection;
         djt.health = 100;
-    djt.body.setSize(50, 80, 0, 0);
 
-        hrc = game.add.sprite(700, game.world.height - 160, 'hrc');
+        // set the default hurtbox
+        djt.body.setSize(30, 40, 0, 0);
+
+        hrc = game.add.sprite(40, game.world.height - 50, 'hrc');
         game.physics.arcade.enable(hrc);
 
         hrc.body.bounce.y = 0.2;
@@ -80,18 +97,18 @@
         hrc.anchor.set(0.5, 0.5);
         hrc.scale.x = hrcdirection;
         hrc.health = 100;
-    hrc.body.setSize(50, 80, 0, 0);
+        hrc.body.setSize(30, 40, 0, 0);
 
 
         twits = game.add.weapon(-1, 'twit');
-        twits.bulletSpeed = djtdirection * 400;
+        twits.bulletSpeed = -djtdirection * 200;
         twits.fireRate = 500;
         twits.bulletWorldWrap = true;
         twits.trackSprite(djt, 0, 0, false);
         twits.bulletKillType = Phaser.Weapon.KILL_NEVER;
 
         mails = game.add.weapon(-1, 'mail');
-        mails.bulletSpeed = -hrcdirection * 400;
+        mails.bulletSpeed = hrcdirection * 200;
         mails.fireRate = 500;
         mails.bulletWorldWrap = true;
         mails.trackSprite(hrc, 0, 0, false);
@@ -117,28 +134,28 @@
         var barConfig0 = {
             width: 400,
             height: 40,
-            x: 200,
-            y: 0,
-            bg: {
-                color: '#FFFFFF'
-            },
-            bar: {
-                color: '#ffae00'
-            },
-        };
-        djtHealth = new HealthBar(game, barConfig0);
-
-        var barConfig1 = {
-            width: 400,
-            height: 40,
             x: 600,
             y: 0,
             bg: {
                 color: '#FFFFFF'
             },
             bar: {
-                color: '#0050ff'
+                color: '#ffae00'
             }, flipped: true
+        };
+        djtHealth = new HealthBar(game, barConfig0);
+
+        var barConfig1 = {
+            width: 400,
+            height: 40,
+            x: 200,
+            y: 0,
+            bg: {
+                color: '#FFFFFF'
+            },
+            bar: {
+                color: '#0050ff'
+            },
         };
         hrcHealth = new HealthBar(game, barConfig1);
     }
@@ -182,7 +199,7 @@
                     twits.fireAngle = Phaser.ANGLE_LEFT;
                 }
 
-                twits.fireOffset(djtdirection * 50, 0);
+                twits.fireOffset(djtdirection * 30, 0);
                 twitTime = game.time.now + 500;
 
             }
@@ -225,7 +242,7 @@
                     mails.fireAngle = Phaser.ANGLE_LEFT;
                 }
 
-                mails.fireOffset(hrcdirection * 50, 0);
+                mails.fireOffset(hrcdirection * 30, 0);
                 mailTime = game.time.now + 500;
 
             }
@@ -285,10 +302,36 @@
 
         djt.damage(10);
 
+        if(djt.health<=20){
+            djt.loadTexture('trump-4')
+        }
+        else if(djt.health<=40){
+                        djt.loadTexture('trump-3')
+
+        }
+         else if(djt.health<=60){
+                        djt.loadTexture('trump-2')
+
+        }
+    else if(djt.health<=80){
+                        djt.loadTexture('trump-1')
+
+        }
         djtHealth.setPercent(djt.health);
 
     }
 
+    function muteClick () {
+
+        if(game.sound.mute){
+            game.sound.mute=false
+                volumebutton.loadTexture('volume', 0);
+
+        }else{
+            game.sound.mute=true
+                volumebutton.loadTexture('mute', 0);
+        }
+    }
 </script>
 
 </body>
