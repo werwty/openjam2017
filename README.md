@@ -5,3 +5,21 @@ Installation Instructions
   `sudo npm install http-server -g`
   `http-server`
 
+TODO:
+- incorporate music and sound effects
+- more platforms (nicer platforms)
+- Better instructions
+- death animation
+- victory animation
+- better character collision
+- title screen
+- refactor code to be less nooby
+
+
+
+Game made with:
+https://github.com/matthiaswh/phaser-health-meter
+https://github.com/photonstorm/phaser
+
+Sprites made with:
+https://www.piskelapp.com

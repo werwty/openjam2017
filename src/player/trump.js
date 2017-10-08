@@ -21,30 +21,33 @@ Trump = function(game, x, y, name) {
 
     this.animations.add('idle', [0, 2], 4, true);
     this.animations.add('walk', [0,1], 4, true);
+    this.animations.add('melee', [0,4,5], 4, true);
 
     this.health = 100;
     this.special = 0;
+    this.cursors = game.input.keyboard.createCursorKeys();
+    this.melee = game.input.keyboard.addKey(Phaser.Keyboard.M)
 
+    this.flinch = false;
 };
 
 Trump.prototype = Object.create(Phaser.Sprite.prototype);
 Trump.prototype.constructor = Trump;
 
-/*
+
 Trump.prototype.update = function() {
-var hitPlatform = game.physics.arcade.collide(this, platforms);
 
 
     this.body.velocity.x = 0;
 
-    if (cursors.left.isDown)
+    if (this.cursors.left.isDown)
     {
         //  Move to the left
         this.body.velocity.x = -150;
 
         this.animations.play('walk');
     }
-    else if (cursors.right.isDown)
+    else if (this.cursors.right.isDown)
     {
         //  Move to the right
         this.body.velocity.x = 150;
@@ -56,16 +59,20 @@ var hitPlatform = game.physics.arcade.collide(this, platforms);
         //  Stand still
         this.animations.play('idle');
 
-        //player.frame = 4;
     }
 
     //  Allow the player to jump if they are touching the ground.
-    if (cursors.up.isDown && this.body.touching.down && hitPlatform)
+    if (this.cursors.up.isDown && this.body.touching.down )
     {
         this.body.velocity.y = -350;
     }
+
+    if(this.melee && !this.flinch){
+        //this.animations.play('melee')
+    }
+
 };
-*/
+
 
 
 Trump.prototype.PlayAnim = function(name) {

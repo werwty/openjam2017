@@ -1,11 +1,10 @@
-
 <!doctype html>
-<html lang="en"> 
-<head> 
-	<meta charset="UTF-8" />
-	<title>Phaser - Making your first game, part 2</title>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Phaser - Making your first game, part 2</title>
     <script src="./lib/phaser.js"></script>
-        <script src="./src/player/trump.js"></script>
+    <script src="./lib/HealthBar.standalone.js"></script>
 
     <style type="text/css">
         body {
@@ -17,46 +16,278 @@
 
 <script type="text/javascript">
 
-var game = new Phaser.Game(800, 600, Phaser.AUTO, '', { preload: preload, create: create, update: update });
+    var game = new Phaser.Game(800, 600, Phaser.AUTO, '', {preload: preload, create: create, update: update});
+    var twitTime = 0;
+    var mailTime = 0;
+    var hrcdirection = -1;
+    var djtdirection = 1;
 
-function preload() {
+    function preload() {
 
-    game.load.image('sky', 'assets/sky.png');
-    game.load.image('ground', 'assets/platform.png');
-    game.load.spritesheet('trump', './assets/trump.png', 160, 160);
+        game.load.image('whitehouse', 'assets/whitehouse.png');
+        game.load.image('ground', 'assets/platform.png');
 
+        game.load.spritesheet('trump', './assets/trump.png', 80, 80);
+        game.load.image('twit', './assets/twit.png');
 
-}
+        game.load.spritesheet('hrc', './assets/hrc.png', 80, 80);
+        game.load.image('mail', './assets/mail.png');
+    }
 
-function create() {
-    game.physics.startSystem(Phaser.Physics.ARCADE);
-    game.add.sprite(0, 0, 'sky');
-
-    //  The platforms group contains the ground and the 2 ledges we can jump on
-    platforms = game.add.group();
-
-    //  We will enable physics for any object that is created in this group
-    platforms.enableBody = true;
-
-    var ground = platforms.create(0, game.world.height- 16, 'ground');
-
-    ground.body.immovable = true;
+    function create() {
 
 
+        game.physics.startSystem(Phaser.Physics.ARCADE);
+        game.add.sprite(0, 0, 'whitehouse');
+
+        //  The platforms group contains the ground and the ledges
+        platforms = game.add.group();
+        platforms.enableBody = true;
+        var ground = platforms.create(0, game.world.height - 16, 'ground');
+        var ground2 = platforms.create(400, game.world.height - 16, 'ground');
+
+        var platform0 = platforms.create(200, game.world.height - 90, 'ground');
+        platform0.body.checkCollision.down = false;
+        platform0.body.checkCollision.left = false;
+        platform0.body.checkCollision.right = false;
+
+        ground.body.immovable = true;
+        ground2.body.immovable = true;
+        platform0.body.immovable = true;
 
 
-    cursors = game.input.keyboard.createCursorKeys();
+        djt = game.add.sprite(80, game.world.height - 160, 'trump');
+        game.physics.arcade.enable(djt);
+
+        djt.body.bounce.y = 0.2;
+        djt.body.gravity.y = 800;
+        djt.animations.add('idle', [0, 2], 4, true);
+        djt.animations.add('walk', [0, 1], 4, true);
+        djt.animations.add('fire', [0, 5], 4, true);
+        djt.anchor.set(0.5, 0.5);
+        djt.scale.x = djtdirection;
+        djt.health = 100;
+    djt.body.setSize(50, 80, 0, 0);
+
+        hrc = game.add.sprite(700, game.world.height - 160, 'hrc');
+        game.physics.arcade.enable(hrc);
+
+        hrc.body.bounce.y = 0.2;
+        hrc.body.gravity.y = 800;
+        hrc.animations.add('idle', [0, 1], 4, true);
+        hrc.animations.add('walk', [0, 2], 4, true);
+        hrc.animations.add('fire', [0, 3], 4, true);
+        hrc.anchor.set(0.5, 0.5);
+        hrc.scale.x = hrcdirection;
+        hrc.health = 100;
+    hrc.body.setSize(50, 80, 0, 0);
 
 
-    trump = new Trump(game, 0, 0, 'trump');
+        twits = game.add.weapon(-1, 'twit');
+        twits.bulletSpeed = djtdirection * 400;
+        twits.fireRate = 500;
+        twits.bulletWorldWrap = true;
+        twits.trackSprite(djt, 0, 0, false);
+        twits.bulletKillType = Phaser.Weapon.KILL_NEVER;
+
+        mails = game.add.weapon(-1, 'mail');
+        mails.bulletSpeed = -hrcdirection * 400;
+        mails.fireRate = 500;
+        mails.bulletWorldWrap = true;
+        mails.trackSprite(hrc, 0, 0, false);
+        mails.bulletKillType = Phaser.Weapon.KILL_NEVER;
+
+        this.leftKey = game.input.keyboard.addKey(Phaser.Keyboard.LEFT);
+        this.rightKey = game.input.keyboard.addKey(Phaser.Keyboard.RIGHT);
+        this.upKey = game.input.keyboard.addKey(Phaser.Keyboard.UP);
+        this.downKey = game.input.keyboard.addKey(Phaser.Keyboard.DOWN);
 
 
+        this.aKey = game.input.keyboard.addKey(Phaser.Keyboard.A);
+        this.dKey = game.input.keyboard.addKey(Phaser.Keyboard.D);
+        this.wKey = game.input.keyboard.addKey(Phaser.Keyboard.W);
+        this.sKey = game.input.keyboard.addKey(Phaser.Keyboard.S);
+        game.input.keyboard.addKeyCapture([Phaser.Keyboard.UP, Phaser.Keyboard.LEFT, Phaser.Keyboard.RIGHT, Phaser.Keyboard.DOWN,
+            Phaser.Keyboard.A, Phaser.Keyboard.D, Phaser.Keyboard.W, Phaser.Keyboard.S]);
 
-}
 
-function update() {
+        djt.health = 100;
+        djt.maxHealth = 100;
 
-}
+        var barConfig0 = {
+            width: 400,
+            height: 40,
+            x: 200,
+            y: 0,
+            bg: {
+                color: '#FFFFFF'
+            },
+            bar: {
+                color: '#ffae00'
+            },
+        };
+        djtHealth = new HealthBar(game, barConfig0);
+
+        var barConfig1 = {
+            width: 400,
+            height: 40,
+            x: 600,
+            y: 0,
+            bg: {
+                color: '#FFFFFF'
+            },
+            bar: {
+                color: '#0050ff'
+            }, flipped: true
+        };
+        hrcHealth = new HealthBar(game, barConfig1);
+    }
+
+    function update() {
+        game.world.wrap(djt, 0, true);
+        game.world.wrap(hrc, 0, true);
+
+        //game.world.wrap(bullets, 0, true);
+
+        var hitPlatformDJT = game.physics.arcade.collide(djt, platforms);
+        djt.body.velocity.x = 0;
+
+        var hitPlatformHRC = game.physics.arcade.collide(hrc, platforms);
+        hrc.body.velocity.x = 0;
+
+        //DJT mvmt
+        if (this.leftKey.isDown) {
+            djt.body.velocity.x = -150;
+            djtdirection = -1;
+            djt.scale.x = djtdirection;
+
+            djt.animations.play('walk');
+        }
+        else if (this.rightKey.isDown) {
+            //  Move to the right
+            djt.body.velocity.x = 150;
+            djtdirection = 1;
+            djt.scale.x = djtdirection;
+
+            djt.animations.play('walk');
+        }
+        else if (this.downKey.isDown) {
+            if (game.time.now > twitTime) {
+
+                djt.animations.play('fire');
+
+                if (djtdirection == 1) {
+                    twits.fireAngle = Phaser.ANGLE_RIGHT;
+                } else {
+                    twits.fireAngle = Phaser.ANGLE_LEFT;
+                }
+
+                twits.fireOffset(djtdirection * 50, 0);
+                twitTime = game.time.now + 500;
+
+            }
+
+        }
+        else {
+            //  Stand still
+            djt.animations.play('idle');
+
+            //player.frame = 4;
+        }
+
+
+        //  Allow the player to jump if they are touching the ground.
+        if (this.upKey.isDown && djt.body.touching.down && hitPlatformDJT) {
+            djt.body.velocity.y = -400;
+        }
+
+        if (this.aKey.isDown) {
+            hrc.body.velocity.x = -150;
+            hrcdirection = -1;
+            hrc.scale.x = hrcdirection;
+
+            hrc.animations.play('walk');
+        }
+        else if (this.dKey.isDown) {
+            //  Move to the right
+            hrc.body.velocity.x = 150;
+            hrcdirection = 1;
+            hrc.scale.x = hrcdirection;
+
+            hrc.animations.play('walk');
+        }
+        else if (this.sKey.isDown) {
+            if (game.time.now > mailTime) {
+                hrc.animations.play('fire');
+                if (hrcdirection == 1) {
+                    mails.fireAngle = Phaser.ANGLE_RIGHT;
+                } else {
+                    mails.fireAngle = Phaser.ANGLE_LEFT;
+                }
+
+                mails.fireOffset(hrcdirection * 50, 0);
+                mailTime = game.time.now + 500;
+
+            }
+
+        }
+        else {
+            //  Stand still
+            hrc.animations.play('idle');
+        }
+
+
+        //  Allow the player to jump if they are touching the ground.
+        if (this.wKey.isDown && hrc.body.touching.down && hitPlatformHRC) {
+            hrc.body.velocity.y = -500;
+        }
+
+        game.physics.arcade.overlap(djt, twits.bullets, friendlyCollision, null, this);
+        game.physics.arcade.overlap(hrc, mails.bullets, friendlyCollision, null, this);
+
+        game.physics.arcade.overlap(twits.bullets, mails.bullets, bulletCollision, null, this);
+
+        game.physics.arcade.overlap(djt, hrc, characterCollision, null, this);
+
+        game.physics.arcade.overlap(hrc, twits.bullets, hrcDamage, null, this);
+        game.physics.arcade.overlap(djt, mails.bullets, djtDamage, null, this);
+
+    }
+
+    function friendlyCollision(djt, bullet) {
+        //  kill the bullet
+        bullet.kill();
+    }
+
+    function bulletCollision(bullet1, bullet2) {
+        //  kill the bullets
+        bullet1.kill();
+        bullet2.kill();
+    }
+
+    function characterCollision(djt, hrc) {
+        djt.body.velocity.x = -djt.body.velocity.x;
+        hrc.body.velocity.x = -hrc.body.velocity.x
+
+    }
+
+    function hrcDamage(hrc, bullet) {
+        bullet.kill();
+        hrc.damage(10);
+
+        hrcHealth.setPercent(hrc.health);
+
+    }
+
+    function djtDamage(djt, bullet) {
+        bullet.kill();
+
+
+        djt.damage(10);
+
+        djtHealth.setPercent(djt.health);
+
+    }
 
 </script>
 
