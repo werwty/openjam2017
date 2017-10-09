@@ -10,9 +10,9 @@ TODO:
 - -incorporate music and sound effects-
 - -more platforms (nicer platforms)-
 - death animation
-- victory animation
+- -victory animation-
 - better character collision
-- title screen
+- -title screen-
 - jump sprite
 - Better instructions
 
@@ -34,6 +34,6 @@ Sound Effects:
 http://freesound.org/people/GabrielAraujo/sounds/242502/
 http://freesound.org/people/jeffsterxl/sounds/360306/
 http://freesound.org/people/jeffsterxl/sounds/360306/
-
+http://freesound.org/people/FunWithSound/sounds/396174/
 
 Icons and Images from: https://commons.wikimedia.org
