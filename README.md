@@ -6,15 +6,15 @@ Installation Instructions
   `http-server`
 
 TODO:
-- damage sprites
-- incorporate music and sound effects
-- more platforms (nicer platforms)
-- Better instructions
+- -damage sprites-
+- -incorporate music and sound effects-
+- -more platforms (nicer platforms)-
 - death animation
 - victory animation
 - better character collision
 - title screen
 - jump sprite
+- Better instructions
 
 TODO for a later day:
 - refactor code to be less nooby
@@ -29,5 +29,11 @@ Sprites made with:
 https://www.piskelapp.com
 
 Music By: github.com/asmacdo
+
+Sound Effects:
+http://freesound.org/people/GabrielAraujo/sounds/242502/
+http://freesound.org/people/jeffsterxl/sounds/360306/
+http://freesound.org/people/jeffsterxl/sounds/360306/
+
 
 Icons and Images from: https://commons.wikimedia.org

@@ -5,6 +5,10 @@
     <title>Phaser - Making your first game, part 2</title>
     <script src="./lib/phaser.js"></script>
     <script src="./lib/HealthBar.standalone.js"></script>
+		<script type="text/javascript" src="js/boot.js"></script>
+		<script type="text/javascript" src="js/preload.js"></script>
+		<script type="text/javascript" src="js/mainMenu.js"></script>
+		<script type="text/javascript" src="js/game.js"></script>
 
     <style type="text/css">
         body {
@@ -17,6 +21,8 @@
 <script type="text/javascript">
 
     var game = new Phaser.Game(800, 600, Phaser.AUTO, '', {preload: preload, create: create, update: update});
+    //game.state.add('MainMenu', SpaceHipster.MainMenu);
+    game.state.add('Game', SpaceHipster.Game);
     var twitTime = 0;
     var mailTime = 0;
     var hrcdirection = 1;
@@ -25,28 +31,43 @@
     function preload() {
 
         game.load.image('whitehouse', 'assets/whitehouse.png');
-        game.load.image('ground', 'assets/platform.png');
+        game.load.image('platform', 'assets/platform.png');
+        game.load.image('ground', 'assets/ground.png');
 
-        game.load.spritesheet('trump', './assets/trump.png', 40, 40)
-                game.load.spritesheet('trump-1', './assets/trump-1.png', 40, 40);
-                game.load.spritesheet('trump-2', './assets/trump-2.png', 40, 40);
-                game.load.spritesheet('trump-3', './assets/trump-3.png', 40, 40);
-                game.load.spritesheet('trump-4', './assets/trump-4.png', 40, 40);
+        game.load.spritesheet('trump', './assets/trump.png', 40, 40);
+        game.load.spritesheet('trump-1', './assets/trump-1.png', 40, 40);
+        game.load.spritesheet('trump-2', './assets/trump-2.png', 40, 40);
+        game.load.spritesheet('trump-3', './assets/trump-3.png', 40, 40);
+        game.load.spritesheet('trump-4', './assets/trump-4.png', 40, 40);
 
 
         game.load.image('twit', './assets/twit.png');
 
         game.load.spritesheet('hrc', './assets/hrc.png', 40, 40);
+        game.load.spritesheet('hrc-1', './assets/hrc-1.png', 40, 40);
+        game.load.spritesheet('hrc-2', './assets/hrc-2.png', 40, 40);
+        game.load.spritesheet('hrc-3', './assets/hrc-3.png', 40, 40);
+        game.load.spritesheet('hrc-4', './assets/hrc-4.png', 40, 40);
+
+
         game.load.image('mail', './assets/mail.png');
         game.load.image('volume', './assets/speaker.png');
         game.load.image('mute', './assets/mute.png');
 
         game.load.audio('bgm', ['assets/bgm.ogg']);
+        game.load.audio('tweetsound', ['assets/tweet.ogg']);
+        game.load.audio('jump', ['assets/jump.wav']);
+        game.load.audio('mailsound', ['assets/mail.wav']);
+
     }
 
     function create() {
 
-        volumebutton = game.add.button(200, game.world.height-500, 'volume', muteClick, this);
+        tweetsound = game.add.audio('tweetsound');
+        jump = game.add.audio('jump');
+        mailsound = game.add.audio('mailsound');
+
+        //volumebutton = game.add.button(200, game.world.height - 500, 'volume', muteClick, this);
 
         music = game.add.audio('bgm');
         music.loop = true;
@@ -59,16 +80,21 @@
         platforms = game.add.group();
         platforms.enableBody = true;
         var ground = platforms.create(0, game.world.height - 16, 'ground');
-        var ground2 = platforms.create(400, game.world.height - 16, 'ground');
-
-        var platform0 = platforms.create(200, game.world.height - 90, 'ground');
-        platform0.body.checkCollision.down = false;
-        platform0.body.checkCollision.left = false;
-        platform0.body.checkCollision.right = false;
-
         ground.body.immovable = true;
-        ground2.body.immovable = true;
-        platform0.body.immovable = true;
+
+        for (var i=0; i<5; i++){
+
+            rand1=Math.floor(Math.random() * 800) -200
+            rand2=Math.floor(Math.random()*20)
+
+            var platform0 = platforms.create(rand1, game.world.height - (i+1)*90-rand2, 'platform');
+            platform0.body.checkCollision.down = false;
+            platform0.body.checkCollision.left = false;
+            platform0.body.checkCollision.right = false;
+
+            platform0.body.immovable = true;
+        }
+
 
 
         djt = game.add.sprite(750, game.world.height - 50, 'trump');
@@ -190,7 +216,7 @@
         }
         else if (this.downKey.isDown) {
             if (game.time.now > twitTime) {
-
+                tweetsound.play()
                 djt.animations.play('fire');
 
                 if (djtdirection == 1) {
@@ -216,6 +242,7 @@
         //  Allow the player to jump if they are touching the ground.
         if (this.upKey.isDown && djt.body.touching.down && hitPlatformDJT) {
             djt.body.velocity.y = -400;
+            jump.play()
         }
 
         if (this.aKey.isDown) {
@@ -236,6 +263,7 @@
         else if (this.sKey.isDown) {
             if (game.time.now > mailTime) {
                 hrc.animations.play('fire');
+                mailsound.play()
                 if (hrcdirection == 1) {
                     mails.fireAngle = Phaser.ANGLE_RIGHT;
                 } else {
@@ -256,7 +284,8 @@
 
         //  Allow the player to jump if they are touching the ground.
         if (this.wKey.isDown && hrc.body.touching.down && hitPlatformHRC) {
-            hrc.body.velocity.y = -500;
+            hrc.body.velocity.y = -500
+            jump.play()
         }
 
         game.physics.arcade.overlap(djt, twits.bullets, friendlyCollision, null, this);
@@ -290,8 +319,23 @@
 
     function hrcDamage(hrc, bullet) {
         bullet.kill();
-        hrc.damage(10);
+        hrc.damage(15);
 
+          if (hrc.health <= 20) {
+            hrc.loadTexture('hrc-4')
+        }
+        else if (hrc.health <= 40) {
+            hrc.loadTexture('hrc-3')
+
+        }
+        else if (hrc.health <= 60) {
+            hrc.loadTexture('hrc-2')
+
+        }
+        else if (hrc.health <= 80) {
+            hrc.loadTexture('hrc-1')
+
+        }
         hrcHealth.setPercent(hrc.health);
 
     }
@@ -302,34 +346,34 @@
 
         djt.damage(10);
 
-        if(djt.health<=20){
+        if (djt.health <= 20) {
             djt.loadTexture('trump-4')
         }
-        else if(djt.health<=40){
-                        djt.loadTexture('trump-3')
+        else if (djt.health <= 40) {
+            djt.loadTexture('trump-3')
 
         }
-         else if(djt.health<=60){
-                        djt.loadTexture('trump-2')
+        else if (djt.health <= 60) {
+            djt.loadTexture('trump-2')
 
         }
-    else if(djt.health<=80){
-                        djt.loadTexture('trump-1')
+        else if (djt.health <= 80) {
+            djt.loadTexture('trump-1')
 
         }
         djtHealth.setPercent(djt.health);
 
     }
 
-    function muteClick () {
+    function muteClick() {
 
-        if(game.sound.mute){
-            game.sound.mute=false
-                volumebutton.loadTexture('volume', 0);
+        if (game.sound.mute) {
+            game.sound.mute = false;
+            volumebutton.loadTexture('volume', 0);
 
-        }else{
-            game.sound.mute=true
-                volumebutton.loadTexture('mute', 0);
+        } else {
+            game.sound.mute = true;
+            volumebutton.loadTexture('mute', 0);
         }
     }
 </script>
